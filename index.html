@@ -38,13 +38,12 @@
         </section>
 
 
-        <section class="controls">
-            <button id="analyze-btn" class="primary-btn">
-                <span class="btn-text">Run Market Analysis</span>
-                <span class="loader hidden"></span>
-            </button>
-            <div id="status-text" class="status-text">Ready to scan Nifty 50 universe...</div>
-        </section>
+        <div class="dashboard-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.8rem; color: var(--text-main);">Current Active Call (<span
+                    id="active-call-time">--:--</span>)</h2>
+            <div id="status-text" class="status-text">Connecting to Bot...</div>
+        </div>
 
         <div class="signals-layout">
             <section class="signal-column buy-column">
@@ -67,7 +66,41 @@
                 </div>
             </section>
         </div>
+
+        <section class="history-section glass-panel" style="margin-top: 3rem; padding: 2rem;">
+            <h2
+                style="margin-bottom: 1.5rem; font-size: 1.8rem; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                Daily Signal History Log</h2>
+            <div id="history-timeline" class="history-timeline">
+                <!-- History blocks injected via JS -->
+            </div>
+        </section>
     </main>
+
+    <!-- Modal Dialog for Stock Details -->
+    <dialog id="stock-modal" class="glass-panel">
+        <div class="modal-header">
+            <h2 id="modal-title">Symbol Details</h2>
+            <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-time-badge" id="modal-time">Call Time: --:--</div>
+            <div class="modal-rationale">
+                <h3>Why was this selected?</h3>
+                <ul id="modal-rationale-list"></ul>
+            </div>
+            <div class="modal-targets">
+                <div class="target-box">
+                    <span>Target</span>
+                    <strong id="modal-target">₹0.00</strong>
+                </div>
+                <div class="stoploss-box">
+                    <span>Stop Loss</span>
+                    <strong id="modal-stoploss">₹0.00</strong>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     <template id="stock-card-template">
         <div class="stock-card glass-panel">

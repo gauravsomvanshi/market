@@ -558,3 +558,157 @@ header p {
     border-radius: 8px;
     display: inline-block;
 }
+
+/* Signal History Timeline */
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.history-block {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.history-time {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+}
+
+.history-row {
+    display: flex;
+    gap: 2rem;
+}
+
+.history-column {
+    flex: 1;
+}
+
+.history-column h4 {
+    margin-bottom: 0.8rem;
+    color: var(--text-muted);
+}
+
+.history-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.history-chip {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.history-chip:hover {
+    transform: translateY(-2px);
+}
+
+.chip-buy {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.chip-sell {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Modal Dialog */
+dialog {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 2rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 500px;
+    width: 90%;
+    margin: auto;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: white;
+}
+
+.modal-time-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-rationale h3 {
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+}
+
+.modal-rationale ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+.modal-targets {
+    display: flex;
+    gap: 1rem;
+}
+
+.target-box, .stoploss-box {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.target-box strong { color: var(--success); font-size: 1.2rem; }
+.stoploss-box strong { color: var(--danger); font-size: 1.2rem; }
+
+/* Pointer for cards */
+.stock-card {
+    cursor: pointer;
+}
