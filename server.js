@@ -374,7 +374,7 @@ app.post('/api/force-analysis', async (req, res) => {
 const path = require('path');
 app.use(express.static(path.join(__dirname)));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Professional Dashboard Proxy Server running on http://0.0.0.0:${PORT}`);
     updateAllPrices(); // Initial price fetch
