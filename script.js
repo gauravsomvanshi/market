@@ -328,11 +328,17 @@ let refreshInterval = null;
 
 function initAllStocksWatchlist() {
     const grid = document.getElementById('all-stocks-grid');
+    const ticker = document.getElementById('custom-ticker');
     if (!grid) return;
     
     grid.innerHTML = '';
+    
+    let tickerHtml = '';
+    
     NIFTY_50.forEach(symbol => {
         const cleanSymbol = symbol.replace('.NS', '');
+        
+        // Setup Grid Cards
         const card = document.createElement('div');
         card.className = 'mini-stock-card';
         card.setAttribute('data-watch-symbol', cleanSymbol);
@@ -342,7 +348,20 @@ function initAllStocksWatchlist() {
             <div class="mini-price" data-prev-price="0">--</div>
         `;
         grid.appendChild(card);
+        
+        // Setup Ticker HTML
+        tickerHtml += `
+            <div class="ticker-item" data-ticker-symbol="${cleanSymbol}">
+                <span class="ticker-symbol">${cleanSymbol}</span>
+                <span class="ticker-price" data-prev-price="0">--</span>
+            </div>
+        `;
     });
+    
+    if (ticker) {
+        // Duplicate content for seamless infinite scrolling
+        ticker.innerHTML = tickerHtml + tickerHtml;
+    }
 }
 
 async function autoRefreshPrices() {
@@ -372,6 +391,30 @@ async function autoRefreshPrices() {
                     priceEl.classList.add('flash-green');
                 } else {
                     priceEl.classList.add('flash-red');
+                }
+            }
+            priceEl.textContent = `₹${latestPrice.toFixed(2)}`;
+            priceEl.setAttribute('data-prev-price', latestPrice);
+        }
+    });
+
+    // Update custom scrolling ticker
+    const tickerItems = document.querySelectorAll('.ticker-item');
+    tickerItems.forEach(item => {
+        const sym = item.getAttribute('data-ticker-symbol');
+        const stockResult = results.find(r => r.symbol === sym);
+        
+        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
+            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+            const priceEl = item.querySelector('.ticker-price');
+            const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
+            
+            if (latestPrice !== prevPrice && prevPrice !== 0) {
+                priceEl.classList.remove('text-success', 'text-danger');
+                if (latestPrice > prevPrice) {
+                    priceEl.classList.add('text-success');
+                } else {
+                    priceEl.classList.add('text-danger');
                 }
             }
             priceEl.textContent = `₹${latestPrice.toFixed(2)}`;

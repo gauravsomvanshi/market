@@ -10,29 +10,11 @@
 </head>
 
 <body>
-    <!-- TradingView Ticker Tape Widget -->
-    <div class="tradingview-widget-container ticker-tape" style="position: sticky; top: 0; z-index: 100;">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
-            async>
-                {
-                    "symbols": [
-                        { "proName": "BSE:SENSEX", "title": "Sensex" },
-                        { "proName": "NSE:NIFTY", "title": "Nifty 50" },
-                        { "proName": "NSE:BANKNIFTY", "title": "Bank Nifty" },
-                        { "proName": "NSE:RELIANCE", "title": "Reliance" },
-                        { "proName": "NSE:HDFCBANK", "title": "HDFC Bank" },
-                        { "proName": "NSE:INFY", "title": "Infosys" },
-                        { "proName": "NSE:TCS", "title": "TCS" },
-                        { "proName": "NSE:ICICIBANK", "title": "ICICI Bank" }
-                    ],
-                        "showSymbolLogo": true,
-                            "isTransparent": false,
-                                "displayMode": "adaptive",
-                                    "colorTheme": "dark",
-                                        "locale": "in"
-                }
-            </script>
+    <!-- Custom Yahoo Finance Ticker -->
+    <div class="custom-ticker-wrap">
+        <div class="custom-ticker" id="custom-ticker">
+            <!-- Ticker items injected via JS -->
+        </div>
     </div>
 
     <div class="background-shapes">
@@ -44,11 +26,12 @@
     <main class="container">
         <header>
             <h1>NSE Intraday Analyzer <span class="badge">PRO</span></h1>
-            <p>Real-time data from TradingView & 15-minute timeframe technical analysis for Nifty 50.</p>
+            <p>Live data from Yahoo Finance & 15-minute timeframe technical analysis for Nifty 50.</p>
         </header>
 
         <section class="all-stocks-watch glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
-            <h2 style="margin-bottom: 1rem; font-size: 1.5rem; color: var(--text-main);">Live Market Watch (Yahoo Finance)</h2>
+            <h2 style="margin-bottom: 1rem; font-size: 1.5rem; color: var(--text-main);">Live Market Watch (Yahoo
+                Finance)</h2>
             <div id="all-stocks-grid" class="all-stocks-grid">
                 <!-- Stock mini cards injected via JS -->
             </div>

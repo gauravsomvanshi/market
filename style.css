@@ -27,9 +27,51 @@ body {
     position: relative;
 }
 
-/* TradingView Ticker */
-.ticker-tape {
+/* Custom Scrolling Ticker */
+.custom-ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0.5rem 0;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+.custom-ticker {
+    display: inline-block;
+    white-space: nowrap;
+    animation: ticker 40s linear infinite;
+}
+
+.custom-ticker:hover {
+    animation-play-state: paused;
+}
+
+.ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.ticker-symbol {
+    color: var(--text-muted);
+}
+
+.ticker-price {
+    color: white;
+}
+
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
 }
 
 /* Background animated shapes */
