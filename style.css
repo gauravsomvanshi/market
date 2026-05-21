@@ -299,7 +299,7 @@ header p {
 .results-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.6rem;
 }
 
 .glass-panel {
@@ -323,27 +323,28 @@ header p {
 .stock-card {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
+    padding: 0.8rem 1.2rem !important;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .stock-symbol {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: white;
     letter-spacing: 1px;
 }
 
 .stock-score {
-    padding: 0.3rem 0.8rem;
-    border-radius: 12px;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .stock-score.buy-score {
@@ -360,79 +361,60 @@ header p {
 
 .price-section {
     border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 1rem;
+    padding-bottom: 0.5rem;
 }
 
 .current-price {
-    font-size: 2.5rem;
-    font-weight: 300;
+    font-size: 1.6rem;
+    font-weight: 600;
     color: white;
 }
 
 .indicators-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .indicator {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.1rem;
 }
 
 .indicator .label {
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .indicator .value {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     font-weight: 600;
 }
 
-.indicator.target-highlight {
-    grid-column: span 1;
-    padding: 1rem;
-    border-radius: 12px;
+.indicator.target-highlight, .indicator.sl-highlight {
+    padding: 0.4rem;
+    border-radius: 8px;
 }
 
-.buy-card .target-highlight {
-    background: var(--success-bg);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
+.buy-card .target-highlight { background: var(--success-bg); border: 1px solid rgba(16, 185, 129, 0.2); }
 .buy-card .target-highlight .label { color: #6ee7b7; }
-.buy-card .target-highlight .value { color: var(--success); font-size: 1.5rem; }
+.buy-card .target-highlight .value { color: var(--success); font-size: 1.1rem; }
 
-.sell-card .target-highlight {
-    background: var(--danger-bg);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
+.sell-card .target-highlight { background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.2); }
 .sell-card .target-highlight .label { color: #fca5a5; }
-.sell-card .target-highlight .value { color: var(--danger); font-size: 1.5rem; }
+.sell-card .target-highlight .value { color: var(--danger); font-size: 1.1rem; }
 
-
-.indicator.sl-highlight {
-    grid-column: span 1;
-    padding: 1rem;
-    border-radius: 12px;
-}
-
-.buy-card .sl-highlight {
-    background: var(--danger-bg);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
+.buy-card .sl-highlight { background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.2); }
 .buy-card .sl-highlight .label { color: #fca5a5; }
-.buy-card .sl-highlight .value { color: var(--danger); font-size: 1.5rem; }
+.buy-card .sl-highlight .value { color: var(--danger); font-size: 1.1rem; }
 
-.sell-card .sl-highlight {
-    background: var(--success-bg);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
+.sell-card .sl-highlight { background: var(--success-bg); border: 1px solid rgba(16, 185, 129, 0.2); }
 .sell-card .sl-highlight .label { color: #6ee7b7; }
-.sell-card .sl-highlight .value { color: var(--success); font-size: 1.5rem; }
+.sell-card .sl-highlight .value { color: var(--success); font-size: 1.1rem; }
 
 /* Dynamic colors based on values */
 .text-success { color: var(--success); }
@@ -440,14 +422,15 @@ header p {
 .text-warning { color: #f59e0b; }
 
 .card-footer {
-    margin-top: auto;
+    margin-top: 0;
 }
 
 .action-btn {
     width: 100%;
-    padding: 0.8rem;
-    border-radius: 12px;
+    padding: 0.5rem;
+    border-radius: 8px;
     font-weight: 600;
+    font-size: 0.85rem;
     font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.2s ease;
