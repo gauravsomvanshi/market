@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,33 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
+    <!-- TradingView Ticker Tape Widget -->
+    <div class="tradingview-widget-container ticker-tape" style="position: sticky; top: 0; z-index: 100;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+            async>
+                {
+                    "symbols": [
+                        { "proName": "BSE:SENSEX", "title": "Sensex" },
+                        { "proName": "NSE:NIFTY", "title": "Nifty 50" },
+                        { "proName": "NSE:BANKNIFTY", "title": "Bank Nifty" },
+                        { "proName": "NSE:RELIANCE", "title": "Reliance" },
+                        { "proName": "NSE:HDFCBANK", "title": "HDFC Bank" },
+                        { "proName": "NSE:INFY", "title": "Infosys" },
+                        { "proName": "NSE:TCS", "title": "TCS" },
+                        { "proName": "NSE:ICICIBANK", "title": "ICICI Bank" }
+                    ],
+                        "showSymbolLogo": true,
+                            "isTransparent": false,
+                                "displayMode": "adaptive",
+                                    "colorTheme": "dark",
+                                        "locale": "in"
+                }
+            </script>
+    </div>
+
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -17,8 +44,36 @@
     <main class="container">
         <header>
             <h1>NSE Intraday Analyzer <span class="badge">PRO</span></h1>
-            <p>15-minute timeframe technical analysis for Nifty 50 stocks to find intraday targets and stop losses.</p>
+            <p>Real-time data from TradingView & 15-minute timeframe technical analysis for Nifty 50.</p>
         </header>
+
+        <section class="tv-chart-section glass-panel">
+            <!-- TradingView Advanced Chart Widget -->
+            <div class="tradingview-widget-container" style="height: 500px; width: 100%;">
+                <div id="tradingview_chart" style="height: calc(100% - 32px); width: 100%;"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                <script type="text/javascript">
+                    new TradingView.widget(
+                        {
+                            "autosize": true,
+                            "symbol": "NSE:NIFTY",
+                            "interval": "15",
+                            "timezone": "Asia/Kolkata",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "in",
+                            "enable_publishing": false,
+                            "backgroundColor": "rgba(19, 23, 34, 0.4)",
+                            "gridColor": "rgba(255, 255, 255, 0.06)",
+                            "hide_top_toolbar": false,
+                            "hide_legend": false,
+                            "save_image": false,
+                            "container_id": "tradingview_chart"
+                        }
+                    );
+                </script>
+            </div>
+        </section>
 
         <section class="controls">
             <button id="analyze-btn" class="primary-btn">
@@ -28,9 +83,27 @@
             <div id="status-text" class="status-text">Ready to scan Nifty 50 universe...</div>
         </section>
 
-        <section id="results-container" class="results-grid">
-            <!-- Stock cards will be injected here via JavaScript -->
-        </section>
+        <div class="signals-layout">
+            <section class="signal-column buy-column">
+                <div class="column-header">
+                    <h2>Top 5 Buy Signals</h2>
+                    <span class="pulse-indicator green"></span>
+                </div>
+                <div id="buy-results-container" class="results-grid">
+                    <!-- Buy cards injected via JS -->
+                </div>
+            </section>
+
+            <section class="signal-column sell-column">
+                <div class="column-header">
+                    <h2>Top 5 Sell Signals</h2>
+                    <span class="pulse-indicator red"></span>
+                </div>
+                <div id="sell-results-container" class="results-grid">
+                    <!-- Sell cards injected via JS -->
+                </div>
+            </section>
+        </div>
     </main>
 
     <template id="stock-card-template">
@@ -65,11 +138,12 @@
                 </div>
             </div>
             <div class="card-footer">
-                <button class="buy-btn">Buy Signal</button>
+                <button class="action-btn">Action</button>
             </div>
         </div>
     </template>
 
     <script src="script.js"></script>
 </body>
+
 </html>

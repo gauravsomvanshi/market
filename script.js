@@ -3,7 +3,6 @@ const NIFTY_50 = [
     'SBIN.NS', 'BHARTIARTL.NS', 'ITC.NS', 'HINDUNILVR.NS', 'LT.NS',
     'BAJFINANCE.NS', 'HCLTECH.NS', 'MARUTI.NS', 'SUNPHARMA.NS', 'TATAMOTORS.NS',
     'KOTAKBANK.NS', 'M&M.NS', 'ONGC.NS', 'TATASTEEL.NS', 'ASIANPAINT.NS'
-    // Limiting to top 20 for faster browser-side processing demo
 ];
 
 const CORS_PROXY = 'https://corsproxy.io/?';
@@ -30,7 +29,6 @@ function calculateEMA(data, period) {
     let ema = [];
     let multiplier = 2 / (period + 1);
     
-    // First EMA is SMA
     let firstSMA = 0;
     for (let i = 0; i < period; i++) {
         if (data[i] === undefined) return ema;
@@ -143,7 +141,6 @@ async function fetchStockData(symbol) {
         const highs = quote.high;
         const lows = quote.low;
         
-        // Remove nulls
         let cleanCloses = [];
         let cleanHighs = [];
         let cleanLows = [];
@@ -170,14 +167,19 @@ async function analyzeStocks() {
     const btnText = btn.querySelector('.btn-text');
     const loader = btn.querySelector('.loader');
     const statusText = document.getElementById('status-text');
-    const resultsContainer = document.getElementById('results-container');
+    
+    const buyContainer = document.getElementById('buy-results-container');
+    const sellContainer = document.getElementById('sell-results-container');
     
     btn.disabled = true;
     btnText.classList.add('hidden');
     loader.classList.remove('hidden');
-    resultsContainer.innerHTML = '';
     
-    let analyzedStocks = [];
+    buyContainer.innerHTML = '';
+    sellContainer.innerHTML = '';
+    
+    let buyOpportunities = [];
+    let sellOpportunities = [];
     
     for (let i = 0; i < NIFTY_50.length; i++) {
         const symbol = NIFTY_50[i];
@@ -188,7 +190,7 @@ async function analyzeStocks() {
         if (data && data.closes.length > 50) {
             const currentPrice = data.closes[data.closes.length - 1];
             
-            // Calculate indicators
+            // Indicators
             const rsiArr = calculateRSI(data.closes);
             const currentRSI = rsiArr[rsiArr.length - 1];
             
@@ -203,80 +205,102 @@ async function analyzeStocks() {
             const atrArr = calculateATR(data.highs, data.lows, data.closes);
             const currentATR = atrArr[atrArr.length - 1];
             
-            // Scoring logic
-            let score = 0;
+            // --- Buy Scoring ---
+            let buyScore = 0;
+            if (currentRSI > 40 && currentRSI < 70) buyScore += 20;
+            if (macdHist > 0) buyScore += 20;
+            if (currentMACD > currentSignal) buyScore += 10;
             
-            // 1. RSI (Bullish if between 40 and 60, strongly bullish if oversold reversing)
-            if (currentRSI > 30 && currentRSI < 70) score += 20;
-            if (currentRSI > 40 && currentRSI < 60) score += 10;
-            
-            // 2. MACD (Bullish crossover or positive histogram)
-            if (macdHist > 0) score += 20;
-            if (currentMACD > currentSignal) score += 10;
-            
-            // 3. Trend (EMA 20 > EMA 50)
             let trend = "Neutral";
             if (ema20 > ema50 && currentPrice > ema20) {
-                score += 30;
+                buyScore += 30;
                 trend = "Bullish";
-            } else if (ema20 < ema50) {
+            }
+            if (currentPrice > data.closes[data.closes.length - 2]) buyScore += 10;
+            
+            // --- Sell Scoring ---
+            let sellScore = 0;
+            if (currentRSI < 60 && currentRSI > 30) sellScore += 20;
+            if (macdHist < 0) sellScore += 20;
+            if (currentMACD < currentSignal) sellScore += 10;
+            
+            if (ema20 < ema50 && currentPrice < ema20) {
+                sellScore += 30;
                 trend = "Bearish";
             }
+            if (currentPrice < data.closes[data.closes.length - 2]) sellScore += 10;
             
-            // 4. Momentum (Price > previous price)
-            if (currentPrice > data.closes[data.closes.length - 2]) score += 10;
-            
-            // Intraday Target and Stop Loss Calculation
-            const stopLoss = currentPrice - (1.5 * currentATR);
-            const target = currentPrice + (3.0 * currentATR);
-            
-            analyzedStocks.push({
+            // Push to respective arrays
+            const baseStockData = {
                 symbol: symbol.replace('.NS', ''),
                 price: currentPrice,
-                score: Math.round(score),
                 rsi: currentRSI,
                 macdHist: macdHist,
                 trend: trend,
-                target: target,
-                stopLoss: stopLoss
+                atr: currentATR
+            };
+
+            // Calculate targets
+            buyOpportunities.push({
+                ...baseStockData,
+                score: Math.round(buyScore),
+                type: 'buy',
+                target: currentPrice + (3.0 * currentATR),
+                stopLoss: currentPrice - (1.5 * currentATR)
+            });
+
+            sellOpportunities.push({
+                ...baseStockData,
+                score: Math.round(sellScore),
+                type: 'sell',
+                target: currentPrice - (3.0 * currentATR),
+                stopLoss: currentPrice + (1.5 * currentATR)
             });
         }
     }
     
-    // Sort by score descending and take top 5
-    analyzedStocks.sort((a, b) => b.score - a.score);
-    const top5 = analyzedStocks.slice(0, 5);
+    // Sort and slice top 5
+    buyOpportunities.sort((a, b) => b.score - a.score);
+    sellOpportunities.sort((a, b) => b.score - a.score);
     
-    statusText.innerText = `Analysis complete. Found top ${top5.length} opportunities.`;
-    renderResults(top5);
+    const top5Buy = buyOpportunities.slice(0, 5);
+    const top5Sell = sellOpportunities.slice(0, 5);
+    
+    statusText.innerText = `Analysis complete. Live data connected via TradingView.`;
+    
+    renderResults(top5Buy, 'buy-results-container');
+    renderResults(top5Sell, 'sell-results-container');
     
     btn.disabled = false;
     btnText.classList.remove('hidden');
     loader.classList.add('hidden');
 }
 
-function renderResults(stocks) {
-    const container = document.getElementById('results-container');
+function renderResults(stocks, containerId) {
+    const container = document.getElementById(containerId);
     const template = document.getElementById('stock-card-template');
     
     stocks.forEach(stock => {
         const clone = template.content.cloneNode(true);
+        const cardEl = clone.querySelector('.stock-card');
+        
+        cardEl.classList.add(stock.type === 'buy' ? 'buy-card' : 'sell-card');
         
         clone.querySelector('.stock-symbol').textContent = stock.symbol;
-        clone.querySelector('.stock-score span').textContent = stock.score;
+        
+        const scoreEl = clone.querySelector('.stock-score');
+        scoreEl.classList.add(stock.type === 'buy' ? 'buy-score' : 'sell-score');
+        scoreEl.innerHTML = `Score: <span>${stock.score}</span>/100`;
+        
         clone.querySelector('.current-price').textContent = `₹${stock.price.toFixed(2)}`;
         
         // RSI
         const rsiEl = clone.querySelector('.rsi-value');
         rsiEl.textContent = stock.rsi.toFixed(2);
-        if (stock.rsi < 30) rsiEl.className += ' text-success';
-        else if (stock.rsi > 70) rsiEl.className += ' text-danger';
-        else rsiEl.className += ' text-warning';
         
         // MACD
         const macdEl = clone.querySelector('.macd-value');
         macdEl.textContent = stock.macdHist > 0 ? `+${stock.macdHist.toFixed(2)}` : stock.macdHist.toFixed(2);
-        macdEl.className += stock.macdHist > 0 ? ' text-success' : ' text-danger';
         
         // Trend
         const trendEl = clone.querySelector('.ema-trend');
@@ -288,6 +312,10 @@ function renderResults(stocks) {
         // Target and Stop Loss
         clone.querySelector('.target-value').textContent = `₹${stock.target.toFixed(2)}`;
         clone.querySelector('.sl-value').textContent = `₹${stock.stopLoss.toFixed(2)}`;
+        
+        // Action Button
+        const btn = clone.querySelector('.action-btn');
+        btn.textContent = stock.type === 'buy' ? 'BUY TARGET' : 'SELL TARGET';
         
         container.appendChild(clone);
     });
