@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSE Stock Analyzer Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <h1>NSE Intraday Analyzer <span class="badge">PRO</span></h1>
+            <p>15-minute timeframe technical analysis for Nifty 50 stocks to find intraday targets and stop losses.</p>
+        </header>
+
+        <section class="controls">
+            <button id="analyze-btn" class="primary-btn">
+                <span class="btn-text">Run Market Analysis</span>
+                <span class="loader hidden"></span>
+            </button>
+            <div id="status-text" class="status-text">Ready to scan Nifty 50 universe...</div>
+        </section>
+
+        <section id="results-container" class="results-grid">
+            <!-- Stock cards will be injected here via JavaScript -->
+        </section>
+    </main>
+
+    <template id="stock-card-template">
+        <div class="stock-card glass-panel">
+            <div class="card-header">
+                <h2 class="stock-symbol">SYMBOL</h2>
+                <div class="stock-score">Score: <span>0</span>/100</div>
+            </div>
+            <div class="price-section">
+                <div class="current-price">₹0.00</div>
+            </div>
+            <div class="indicators-grid">
+                <div class="indicator">
+                    <span class="label">RSI (14)</span>
+                    <span class="value rsi-value">0.00</span>
+                </div>
+                <div class="indicator">
+                    <span class="label">MACD</span>
+                    <span class="value macd-value">0.00</span>
+                </div>
+                <div class="indicator" style="grid-column: span 2;">
+                    <span class="label">Trend (EMA)</span>
+                    <span class="value ema-trend">Neutral</span>
+                </div>
+                <div class="indicator target-highlight">
+                    <span class="label">Target</span>
+                    <span class="value target-value">₹0.00</span>
+                </div>
+                <div class="indicator sl-highlight">
+                    <span class="label">Stop Loss</span>
+                    <span class="value sl-value">₹0.00</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="buy-btn">Buy Signal</button>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
