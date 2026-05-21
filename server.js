@@ -370,8 +370,12 @@ app.post('/api/force-analysis', async (req, res) => {
     res.json({ success: true, latest: signalsHistory[0] });
 });
 
+// Serve frontend static files
+const path = require('path');
+app.use(express.static(path.join(__dirname)));
+
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Professional Dashboard Proxy Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Professional Dashboard Proxy Server running on http://0.0.0.0:${PORT}`);
     updateAllPrices(); // Initial price fetch
 });

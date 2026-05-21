@@ -12,7 +12,7 @@ let currentSignals = [];
 async function fetchAndRenderDashboard() {
     const statusText = document.getElementById('status-text');
     try {
-        const response = await fetch('http://localhost:3000/api/signals-history');
+        const response = await fetch('/api/signals-history');
         const history = await response.json();
         
         if (history.length === 0) {
@@ -226,7 +226,7 @@ function initAllStocksWatchlist() {
 
 async function autoRefreshPrices() {
     try {
-        const response = await fetch('http://localhost:3000/api/live-prices');
+        const response = await fetch('/api/live-prices');
         const livePrices = await response.json();
         
         const results = Object.keys(livePrices).map(symbol => {
