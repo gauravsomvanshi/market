@@ -266,7 +266,21 @@ async function analyzeStocks() {
     const top5Buy = buyOpportunities.slice(0, 5);
     const top5Sell = sellOpportunities.slice(0, 5);
     
-    statusText.innerText = `Analysis complete. Live data connected via TradingView.`;
+    // Override delayed prices with TRUE real-time prices before rendering
+    try {
+        const response = await fetch('http://localhost:3000/api/live-prices');
+        const livePrices = await response.json();
+        
+        [...top5Buy, ...top5Sell].forEach(stock => {
+            if (livePrices[stock.symbol]) {
+                stock.price = livePrices[stock.symbol];
+            }
+        });
+    } catch(err) {
+        console.error("Failed to fetch live prices for initial render", err);
+    }
+    
+    statusText.innerText = `Analysis complete. Real-time data connected.`;
     
     renderResults(top5Buy, 'buy-results-container');
     renderResults(top5Sell, 'sell-results-container');
