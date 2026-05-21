@@ -292,7 +292,29 @@ function renderResults(stocks, containerId) {
         scoreEl.classList.add(stock.type === 'buy' ? 'buy-score' : 'sell-score');
         scoreEl.innerHTML = `Score: <span>${stock.score}</span>/100`;
         
-        clone.querySelector('.current-price').textContent = `₹${stock.price.toFixed(2)}`;
+        const priceSection = clone.querySelector('.price-section');
+        priceSection.innerHTML = '';
+        
+        const tvContainer = document.createElement('div');
+        tvContainer.className = 'tradingview-widget-container';
+        const tvWidgetInner = document.createElement('div');
+        tvWidgetInner.className = 'tradingview-widget-container__widget';
+        tvContainer.appendChild(tvWidgetInner);
+        
+        const tvScript = document.createElement('script');
+        tvScript.type = 'text/javascript';
+        tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+        tvScript.async = true;
+        tvScript.innerHTML = JSON.stringify({
+            "symbol": `NSE:${stock.symbol}`,
+            "width": "100%",
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "locale": "in"
+        });
+        
+        tvContainer.appendChild(tvScript);
+        priceSection.appendChild(tvContainer);
         
         // RSI
         const rsiEl = clone.querySelector('.rsi-value');
