@@ -61,7 +61,20 @@ function renderResults(stocks, containerId) {
         scoreEl.innerHTML = `Score: <span>${stock.score}</span>/100`;
         
         const priceSection = clone.querySelector('.price-section');
-        priceSection.innerHTML = `<div class="current-price" data-prev-price="${stock.price}">₹${stock.price.toFixed(2)}</div>`;
+        priceSection.style.display = 'flex';
+        priceSection.style.justifyContent = 'space-between';
+        priceSection.style.alignItems = 'flex-end';
+        
+        priceSection.innerHTML = `
+            <div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Call Price</div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: #cbd5e1;">₹${stock.price.toFixed(2)}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Live Price</div>
+                <div class="current-price" data-prev-price="${stock.price}">₹${stock.price.toFixed(2)}</div>
+            </div>
+        `;
         
         // RSI
         const rsiEl = clone.querySelector('.rsi-value');
