@@ -365,13 +365,13 @@ function initAllStocksWatchlist() {
 }
 
 async function autoRefreshPrices() {
-    // We fetch ALL NIFTY_50 stocks in parallel for speed
-    const fetchPromises = NIFTY_50.map(async (symbol) => {
-        const data = await fetchStockData(symbol);
-        return { symbol: symbol.replace('.NS', ''), data };
-    });
-    
-    const results = await Promise.all(fetchPromises);
+    try {
+        const response = await fetch('http://localhost:3000/api/live-prices');
+        const livePrices = await response.json();
+        
+        const results = Object.keys(livePrices).map(symbol => {
+            return { symbol: symbol, price: livePrices[symbol] };
+        });
     
     // Update mini watchlist
     const gridCards = document.querySelectorAll('.mini-stock-card');
@@ -379,8 +379,8 @@ async function autoRefreshPrices() {
         const sym = card.getAttribute('data-watch-symbol');
         const stockResult = results.find(r => r.symbol === sym);
         
-        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
-            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+        if (stockResult && stockResult.price) {
+            const latestPrice = stockResult.price;
             const priceEl = card.querySelector('.mini-price');
             const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
             
@@ -404,8 +404,8 @@ async function autoRefreshPrices() {
         const sym = item.getAttribute('data-ticker-symbol');
         const stockResult = results.find(r => r.symbol === sym);
         
-        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
-            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+        if (stockResult && stockResult.price) {
+            const latestPrice = stockResult.price;
             const priceEl = item.querySelector('.ticker-price');
             const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
             
@@ -428,8 +428,8 @@ async function autoRefreshPrices() {
         const sym = card.getAttribute('data-symbol');
         const stockResult = results.find(r => r.symbol === sym);
         
-        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
-            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+        if (stockResult && stockResult.price) {
+            const latestPrice = stockResult.price;
             const priceEl = card.querySelector('.current-price');
             const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
             
@@ -446,6 +446,9 @@ async function autoRefreshPrices() {
             priceEl.setAttribute('data-prev-price', latestPrice);
         }
     });
+    } catch(err) {
+        console.error("Failed to fetch live prices from backend proxy", err);
+    }
 }
 
 // Initialize the watchlist and start fetching immediately
