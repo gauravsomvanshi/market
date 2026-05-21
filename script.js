@@ -283,7 +283,7 @@ function renderResults(stocks, containerId) {
     stocks.forEach(stock => {
         const clone = template.content.cloneNode(true);
         const cardEl = clone.querySelector('.stock-card');
-        
+        cardEl.setAttribute('data-symbol', stock.symbol);
         cardEl.classList.add(stock.type === 'buy' ? 'buy-card' : 'sell-card');
         
         clone.querySelector('.stock-symbol').textContent = stock.symbol;
@@ -293,28 +293,7 @@ function renderResults(stocks, containerId) {
         scoreEl.innerHTML = `Score: <span>${stock.score}</span>/100`;
         
         const priceSection = clone.querySelector('.price-section');
-        priceSection.innerHTML = '';
-        
-        const tvContainer = document.createElement('div');
-        tvContainer.className = 'tradingview-widget-container';
-        const tvWidgetInner = document.createElement('div');
-        tvWidgetInner.className = 'tradingview-widget-container__widget';
-        tvContainer.appendChild(tvWidgetInner);
-        
-        const tvScript = document.createElement('script');
-        tvScript.type = 'text/javascript';
-        tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-        tvScript.async = true;
-        tvScript.innerHTML = JSON.stringify({
-            "symbol": `NSE:${stock.symbol}`,
-            "width": "100%",
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "locale": "in"
-        });
-        
-        tvContainer.appendChild(tvScript);
-        priceSection.appendChild(tvContainer);
+        priceSection.innerHTML = `<div class="current-price" data-prev-price="${stock.price}">₹${stock.price.toFixed(2)}</div>`;
         
         // RSI
         const rsiEl = clone.querySelector('.rsi-value');
@@ -343,4 +322,43 @@ function renderResults(stocks, containerId) {
     });
 }
 
-document.getElementById('analyze-btn').addEventListener('click', analyzeStocks);
+// --- Live Price Auto-Refresh ---
+
+let refreshInterval = null;
+
+async function autoRefreshPrices() {
+    const cards = document.querySelectorAll('.stock-card');
+    if (cards.length === 0) return;
+
+    for (let card of cards) {
+        const symbol = card.getAttribute('data-symbol') + '.NS';
+        const data = await fetchStockData(symbol);
+        
+        if (data && data.closes.length > 0) {
+            const latestPrice = data.closes[data.closes.length - 1];
+            const priceEl = card.querySelector('.current-price');
+            const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price'));
+            
+            if (latestPrice !== prevPrice) {
+                priceEl.textContent = `₹${latestPrice.toFixed(2)}`;
+                priceEl.setAttribute('data-prev-price', latestPrice);
+                
+                // Flash animation
+                priceEl.classList.remove('flash-green', 'flash-red');
+                void priceEl.offsetWidth; // Trigger reflow
+                if (latestPrice > prevPrice) {
+                    priceEl.classList.add('flash-green');
+                } else {
+                    priceEl.classList.add('flash-red');
+                }
+            }
+        }
+    }
+}
+
+document.getElementById('analyze-btn').addEventListener('click', async () => {
+    await analyzeStocks();
+    // Start auto-refresh after analysis completes
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(autoRefreshPrices, 15000); // Check every 15 seconds
+});
