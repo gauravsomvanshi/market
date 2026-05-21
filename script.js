@@ -322,28 +322,50 @@ function renderResults(stocks, containerId) {
     });
 }
 
-// --- Live Price Auto-Refresh ---
+// --- Live Price Auto-Refresh & Watchlist ---
 
 let refreshInterval = null;
 
-async function autoRefreshPrices() {
-    const cards = document.querySelectorAll('.stock-card');
-    if (cards.length === 0) return;
-
-    for (let card of cards) {
-        const symbol = card.getAttribute('data-symbol') + '.NS';
-        const data = await fetchStockData(symbol);
+function initAllStocksWatchlist() {
+    const grid = document.getElementById('all-stocks-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    NIFTY_50.forEach(symbol => {
+        const cleanSymbol = symbol.replace('.NS', '');
+        const card = document.createElement('div');
+        card.className = 'mini-stock-card';
+        card.setAttribute('data-watch-symbol', cleanSymbol);
         
-        if (data && data.closes.length > 0) {
-            const latestPrice = data.closes[data.closes.length - 1];
-            const priceEl = card.querySelector('.current-price');
-            const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price'));
+        card.innerHTML = `
+            <div class="mini-symbol">${cleanSymbol}</div>
+            <div class="mini-price" data-prev-price="0">--</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function autoRefreshPrices() {
+    // We fetch ALL NIFTY_50 stocks in parallel for speed
+    const fetchPromises = NIFTY_50.map(async (symbol) => {
+        const data = await fetchStockData(symbol);
+        return { symbol: symbol.replace('.NS', ''), data };
+    });
+    
+    const results = await Promise.all(fetchPromises);
+    
+    // Update mini watchlist
+    const gridCards = document.querySelectorAll('.mini-stock-card');
+    gridCards.forEach(card => {
+        const sym = card.getAttribute('data-watch-symbol');
+        const stockResult = results.find(r => r.symbol === sym);
+        
+        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
+            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+            const priceEl = card.querySelector('.mini-price');
+            const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
             
-            if (latestPrice !== prevPrice) {
-                priceEl.textContent = `₹${latestPrice.toFixed(2)}`;
-                priceEl.setAttribute('data-prev-price', latestPrice);
-                
-                // Flash animation
+            if (latestPrice !== prevPrice && prevPrice !== 0) {
                 priceEl.classList.remove('flash-green', 'flash-red');
                 void priceEl.offsetWidth; // Trigger reflow
                 if (latestPrice > prevPrice) {
@@ -352,13 +374,42 @@ async function autoRefreshPrices() {
                     priceEl.classList.add('flash-red');
                 }
             }
+            priceEl.textContent = `₹${latestPrice.toFixed(2)}`;
+            priceEl.setAttribute('data-prev-price', latestPrice);
         }
-    }
+    });
+
+    // Also update main analysis cards if they exist
+    const mainCards = document.querySelectorAll('.stock-card');
+    mainCards.forEach(card => {
+        const sym = card.getAttribute('data-symbol');
+        const stockResult = results.find(r => r.symbol === sym);
+        
+        if (stockResult && stockResult.data && stockResult.data.closes.length > 0) {
+            const latestPrice = stockResult.data.closes[stockResult.data.closes.length - 1];
+            const priceEl = card.querySelector('.current-price');
+            const prevPrice = parseFloat(priceEl.getAttribute('data-prev-price')) || 0;
+            
+            if (latestPrice !== prevPrice && prevPrice !== 0) {
+                priceEl.classList.remove('flash-green', 'flash-red');
+                void priceEl.offsetWidth; // Trigger reflow
+                if (latestPrice > prevPrice) {
+                    priceEl.classList.add('flash-green');
+                } else {
+                    priceEl.classList.add('flash-red');
+                }
+            }
+            priceEl.textContent = `₹${latestPrice.toFixed(2)}`;
+            priceEl.setAttribute('data-prev-price', latestPrice);
+        }
+    });
 }
+
+// Initialize the watchlist and start fetching immediately
+initAllStocksWatchlist();
+autoRefreshPrices();
+refreshInterval = setInterval(autoRefreshPrices, 15000); // Check every 15 seconds
 
 document.getElementById('analyze-btn').addEventListener('click', async () => {
     await analyzeStocks();
-    // Start auto-refresh after analysis completes
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(autoRefreshPrices, 15000); // Check every 15 seconds
 });
