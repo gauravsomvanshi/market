@@ -195,6 +195,118 @@ async function fetchHistoricalData(symbol) {
     }
 }
 
+function performTechnicalAnalysis(symbol, data, currentPrice) {
+    const rsiArr = calculateRSI(data.closes);
+    const currentRSI = rsiArr[rsiArr.length - 1];
+    
+    const macdData = calculateMACD(data.closes);
+    const currentMACD = macdData.macdLine[macdData.macdLine.length - 1];
+    const currentSignal = macdData.signalLine[macdData.signalLine.length - 1];
+    const macdHist = macdData.histogram[macdData.histogram.length - 1];
+    
+    const ema20 = calculateEMA(data.closes, 20)[data.closes.length - 1];
+    const ema50 = calculateEMA(data.closes, 50)[data.closes.length - 1];
+    
+    const atrArr = calculateATR(data.highs, data.lows, data.closes);
+    const currentATR = atrArr[atrArr.length - 1];
+    
+    const recentHighs = data.highs.slice(-20);
+    const recentLows = data.lows.slice(-20);
+    const resistance = Math.max(...recentHighs);
+    const support = Math.min(...recentLows);
+    
+    let buyRationale = [];
+    let sellRationale = [];
+    
+    let buyScore = 0;
+    if (currentRSI > 40 && currentRSI < 70) {
+        buyScore += 20;
+        buyRationale.push(`RSI is in optimal buying zone (${currentRSI.toFixed(1)}).`);
+    }
+    if (macdHist > 0) {
+        buyScore += 20;
+        buyRationale.push("MACD Histogram is positive, indicating upward momentum.");
+    }
+    if (currentMACD > currentSignal) {
+        buyScore += 10;
+        buyRationale.push("MACD Line crossed above Signal Line (Bullish Crossover).");
+    }
+    
+    let trend = "Neutral";
+    if (ema20 > ema50 && currentPrice > ema20) {
+        buyScore += 30;
+        trend = "Bullish";
+        buyRationale.push("Price is above 20 EMA and 20 EMA > 50 EMA, confirming a strong uptrend.");
+    } else if (ema20 < ema50 && currentPrice < ema20) {
+        trend = "Bearish";
+    }
+    if (currentPrice > data.closes[data.closes.length - 2]) {
+        buyScore += 10;
+        buyRationale.push("Current price is higher than the previous 15-min close.");
+    }
+    
+    let sellScore = 0;
+    if (currentRSI < 60 && currentRSI > 30) {
+        sellScore += 20;
+        sellRationale.push(`RSI is in optimal selling/shorting zone (${currentRSI.toFixed(1)}).`);
+    }
+    if (macdHist < 0) {
+        sellScore += 20;
+        sellRationale.push("MACD Histogram is negative, indicating downward momentum.");
+    }
+    if (currentMACD < currentSignal) {
+        sellScore += 10;
+        sellRationale.push("MACD Line crossed below Signal Line (Bearish Crossover).");
+    }
+    
+    if (ema20 < ema50 && currentPrice < ema20) {
+        sellScore += 30;
+        sellRationale.push("Price is below 20 EMA and 20 EMA < 50 EMA, confirming a strong downtrend.");
+    }
+    if (currentPrice < data.closes[data.closes.length - 2]) {
+        sellScore += 10;
+        sellRationale.push("Current price is lower than the previous 15-min close.");
+    }
+    
+    let decision = 'neutral';
+    let target = 0;
+    let stopLoss = 0;
+    let finalRationale = [];
+    
+    if (buyScore >= sellScore && buyScore >= 40) {
+        decision = 'buy';
+        target = currentPrice + (3.0 * currentATR);
+        stopLoss = currentPrice - (1.5 * currentATR);
+        finalRationale = buyRationale;
+    } else if (sellScore > buyScore && sellScore >= 40) {
+        decision = 'sell';
+        target = currentPrice - (3.0 * currentATR);
+        stopLoss = currentPrice + (1.5 * currentATR);
+        finalRationale = sellRationale;
+    } else {
+        decision = 'neutral';
+        target = resistance;
+        stopLoss = support;
+        finalRationale = ["Mixed signals. Price is consolidating or indicators are conflicting."];
+    }
+    
+    return {
+        symbol,
+        price: currentPrice,
+        rsi: currentRSI,
+        macdHist,
+        trend,
+        atr: currentATR,
+        support,
+        resistance,
+        decision,
+        target,
+        stopLoss,
+        rationale: finalRationale,
+        score: Math.max(buyScore, sellScore)
+    };
+}
+
 async function runMarketAnalysis() {
     console.log(`Running market analysis at ${new Date().toLocaleTimeString()}...`);
     let buyOpportunities = [];
@@ -368,6 +480,29 @@ app.get('/api/signals-history', (req, res) => {
 app.post('/api/force-analysis', async (req, res) => {
     await runMarketAnalysis();
     res.json({ success: true, latest: signalsHistory[0] });
+});
+
+// Single stock analysis
+app.get('/api/analyze/:symbol', async (req, res) => {
+    try {
+        const rawSymbol = req.params.symbol.toUpperCase();
+        const nseSymbol = rawSymbol.replace('.NS', ''); // Clean the symbol
+        
+        const data = await fetchHistoricalData(nseSymbol);
+        if (!data || data.closes.length < 50) {
+            return res.status(400).json({ error: 'Not enough data found for symbol ' + nseSymbol });
+        }
+        
+        let livePrice = await fetchGoogleFinancePrice(nseSymbol);
+        if (!livePrice) {
+            livePrice = data.closes[data.closes.length - 1]; // Fallback
+        }
+        
+        const analysis = performTechnicalAnalysis(nseSymbol, data, livePrice);
+        res.json(analysis);
+    } catch(err) {
+        res.status(500).json({ error: 'Server error during analysis' });
+    }
 });
 
 // Serve frontend static files

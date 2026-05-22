@@ -29,9 +29,23 @@
             <p>100% Real-time data & 15-minute timeframe technical analysis for Nifty 50.</p>
         </header>
 
+        <!-- Stock Search Tab -->
+        <section class="search-section glass-panel"
+            style="margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-main);">🔍 Search Any Stock Analysis
+            </h2>
+            <div class="search-bar">
+                <input type="text" id="stock-search-input" placeholder="Enter NSE Symbol (e.g. RELIANCE, TCS)"
+                    autocomplete="off">
+                <button id="search-btn" class="primary-btn"
+                    style="padding: 0.8rem 2rem; font-size: 1rem;">Analyze</button>
+            </div>
+            <div id="search-error" class="text-danger" style="margin-top: 0.5rem; display: none;"></div>
 
-
-
+            <div id="search-result-container" style="width: 100%; margin-top: 2rem; display: none;">
+                <!-- Result injected here via JS -->
+            </div>
+        </section>
         <div class="dashboard-header"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h2 style="font-size: 1.8rem; color: var(--text-main);">Current Active Call (<span

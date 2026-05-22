@@ -1,3 +1,5 @@
+const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+
 const NIFTY_50 = [
     'RELIANCE', 'TCS', 'HDFCBANK', 'ICICIBANK', 'INFY',
     'SBIN', 'BHARTIARTL', 'ITC', 'HINDUNILVR', 'LT',
@@ -12,7 +14,7 @@ let currentSignals = [];
 async function fetchAndRenderDashboard() {
     const statusText = document.getElementById('status-text');
     try {
-        const response = await fetch('/api/signals-history');
+        const response = await fetch(API_BASE_URL + '/api/signals-history');
         const history = await response.json();
         
         if (history.length === 0) {
@@ -226,7 +228,7 @@ function initAllStocksWatchlist() {
 
 async function autoRefreshPrices() {
     try {
-        const response = await fetch('/api/live-prices');
+        const response = await fetch(API_BASE_URL + '/api/live-prices');
         const livePrices = await response.json();
         
         const results = Object.keys(livePrices).map(symbol => {
@@ -310,3 +312,111 @@ initAllStocksWatchlist();
 autoRefreshPrices();
 setInterval(autoRefreshPrices, 10000); // 10s price refresh
 fetchAndRenderDashboard(); // Initial load
+
+// --- Stock Search Logic ---
+const searchBtn = document.getElementById('search-btn');
+const searchInput = document.getElementById('stock-search-input');
+const searchError = document.getElementById('search-error');
+const searchResultContainer = document.getElementById('search-result-container');
+
+searchBtn.addEventListener('click', performSearch);
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performSearch();
+});
+
+async function performSearch() {
+    const symbol = searchInput.value.trim().toUpperCase();
+    if (!symbol) return;
+    
+    // Reset state
+    searchError.style.display = 'none';
+    searchResultContainer.style.display = 'block';
+    searchResultContainer.innerHTML = '<div style="text-align:center; padding: 2rem;"><div class="loader" style="margin: 0 auto; border-top-color: var(--primary-accent);"></div><p style="margin-top:1rem; color: var(--text-muted);">Running full technical analysis...</p></div>';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/analyze/${symbol}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            renderSearchResult(data);
+        } else {
+            searchError.innerText = data.error || 'Failed to analyze stock.';
+            searchError.style.display = 'block';
+            searchResultContainer.style.display = 'none';
+        }
+    } catch(err) {
+        searchError.innerText = 'Network error. Could not connect to backend.';
+        searchError.style.display = 'block';
+        searchResultContainer.style.display = 'none';
+    }
+}
+
+function renderSearchResult(data) {
+    let badgeClass = 'decision-neutral';
+    if (data.decision === 'buy') badgeClass = 'decision-buy';
+    if (data.decision === 'sell') badgeClass = 'decision-sell';
+    
+    let rationaleHtml = '';
+    if (data.rationale && data.rationale.length > 0) {
+        rationaleHtml = `
+            <div style="margin-top: 1.5rem; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Technical Rationale</h3>
+                <ul style="padding-left: 1.5rem; line-height: 1.6; color: #cbd5e1;">
+                    ${data.rationale.map(r => `<li style="margin-bottom: 0.5rem;">${r}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    searchResultContainer.innerHTML = `
+        <div class="search-result-card" style="animation: fade-in 0.5s ease-out;">
+            <div class="search-result-header">
+                <div class="search-result-title">${data.symbol}</div>
+                <div class="search-decision-badge ${badgeClass}">${data.decision}</div>
+            </div>
+            
+            <div class="search-metrics-grid">
+                <div class="search-metric">
+                    <span class="label">Live Price</span>
+                    <span class="value">₹${data.price.toFixed(2)}</span>
+                </div>
+                <div class="search-metric">
+                    <span class="label">Trend (EMA)</span>
+                    <span class="value ${data.trend === 'Bullish' ? 'text-success' : (data.trend === 'Bearish' ? 'text-danger' : '')}">${data.trend}</span>
+                </div>
+                <div class="search-metric">
+                    <span class="label">RSI (14)</span>
+                    <span class="value">${data.rsi.toFixed(2)}</span>
+                </div>
+                <div class="search-metric">
+                    <span class="label">MACD</span>
+                    <span class="value ${data.macdHist > 0 ? 'text-success' : 'text-danger'}">${data.macdHist > 0 ? '+' : ''}${data.macdHist.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <div class="search-metrics-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+                <div class="search-metric" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <span class="label">Support Level</span>
+                    <span class="value text-success">₹${data.support.toFixed(2)}</span>
+                </div>
+                <div class="search-metric" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+                    <span class="label">Resistance Level</span>
+                    <span class="value text-danger">₹${data.resistance.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <div class="search-metrics-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+                <div class="search-metric" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <span class="label">Next Target</span>
+                    <span class="value" style="color: #60a5fa;">₹${data.target.toFixed(2)}</span>
+                </div>
+                <div class="search-metric" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <span class="label">Suggested Stop Loss</span>
+                    <span class="value" style="color: #fcd34d;">₹${data.stopLoss.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            ${rationaleHtml}
+        </div>
+    `;
+}

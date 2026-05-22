@@ -722,3 +722,93 @@ dialog::backdrop {
         font-size: 1.5rem;
     }
 }
+
+/* Search Tab */
+.search-bar {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border-radius: 30px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    border-color: var(--primary-accent);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.search-result-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--primary-accent);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.search-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.search-result-title {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.search-decision-badge {
+    padding: 0.5rem 1.5rem;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+}
+
+.decision-buy { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+.decision-sell { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+.decision-neutral { background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--text-muted); }
+
+.search-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.search-metric {
+    background: rgba(255,255,255,0.03);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.search-metric .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.search-metric .value {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
